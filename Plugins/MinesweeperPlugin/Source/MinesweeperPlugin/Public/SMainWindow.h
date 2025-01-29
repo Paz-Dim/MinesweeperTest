@@ -24,6 +24,12 @@ public:
     void Construct(const FArguments &InArgs);
 
 protected:
+    // Constants
+    // Google Gemini request format
+    static const FString HTTP_REQUEST_FORMAT;
+    // Google Gemeni API URL
+    static const FString HTTP_REQUEST_URL;
+
     // Fields
     // Request input field
     TSharedPtr<SEditableTextBox> m_requestInput {nullptr};

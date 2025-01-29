@@ -4,6 +4,9 @@
 #include "SMainWindow.h"
 #include "SlateOptMacros.h"
 
+const FString SMainWindow::HTTP_REQUEST_FORMAT {"{'contents': [{'parts':[{'text': '{0}. Show only result, use X for empty cells and O for mines. Skip extra lines.'}]}]}"};
+const FString SMainWindow::HTTP_REQUEST_URL {"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyByLZNRcZviFG-nf2E2RjEkzm4W4mxWIK0"};
+
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SMainWindow::Construct(const FArguments &InArgs)
 {
@@ -65,9 +68,8 @@ FReply SMainWindow::onRequestButtonClick()
     TSharedRef<IHttpRequest> httpRequest = FHttpModule::Get().CreateRequest();
     httpRequest->SetVerb("POST");
     httpRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-    httpRequest->SetContentAsString(*FString::Printf(TEXT("{'contents': [{'parts':[{'text': '%s. Show only result, use X for empty cells and O for mines. Skip extra lines.'}]}]}"),
-                                    *m_requestInput->GetText().ToString()));
-    httpRequest->SetURL(TEXT("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyByLZNRcZviFG-nf2E2RjEkzm4W4mxWIK0"));
+    httpRequest->SetContentAsString(FString::Format(*HTTP_REQUEST_FORMAT, {m_requestInput->GetText().ToString()}));
+    httpRequest->SetURL(*HTTP_REQUEST_URL);
     httpRequest->OnProcessRequestComplete().BindLambda([](FHttpRequestPtr httpRequest, FHttpResponsePtr httpResponse, bool bSucceeded)
     {
         if (!bSucceeded)
@@ -79,14 +81,16 @@ FReply SMainWindow::onRequestButtonClick()
             GEngine->AddOnScreenDebugMessage(-1,
                                              15.0f,
                                              FColor::Red,
-                                             FString::Printf(TEXT("HTTP request error %d"), httpResponse->GetResponseCode()));
+                                             FString::Printf(TEXT("HTTP request error %d %s"),
+                                             httpResponse->GetResponseCode(),
+                                             *httpResponse->GetContentAsString()));
         else
         {
             TSharedPtr<FJsonObject> jsonObject = MakeShared<FJsonObject>();
             TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(httpResponse->GetContentAsString());
             if (FJsonSerializer::Deserialize(jsonReader, jsonObject))
             {
-                TArray<TSharedPtr<FJsonValue>> candidates = jsonObject->GetArrayField("candidates");
+                TArray<TSharedPtr<FJsonValue>> candidates = jsonObject->GetArrayField(TEXT("candidates"));
                 if (candidates.IsEmpty())
                     GEngine->AddOnScreenDebugMessage(-1,
                                                      15.0f,
@@ -94,7 +98,7 @@ FReply SMainWindow::onRequestButtonClick()
                                                      FString::Printf(TEXT("Candidates empty")));
                 else
                 {
-                    TSharedPtr<FJsonObject> content = candidates[0]->AsObject()->GetObjectField("content");
+                    TSharedPtr<FJsonObject> content = candidates[0]->AsObject()->GetObjectField(TEXT("content"));
                     if (!content)
                         GEngine->AddOnScreenDebugMessage(-1,
                                                          15.0f,
@@ -102,7 +106,7 @@ FReply SMainWindow::onRequestButtonClick()
                                                          FString::Printf(TEXT("No content")));
                     else
                     {
-                        TArray<TSharedPtr<FJsonValue>> parts = content->GetArrayField("parts");
+                        TArray<TSharedPtr<FJsonValue>> parts = content->GetArrayField(TEXT("parts"));
                         if (parts.IsEmpty())
                             GEngine->AddOnScreenDebugMessage(-1,
                                                              15.0f,
@@ -117,7 +121,7 @@ FReply SMainWindow::onRequestButtonClick()
                             GEngine->AddOnScreenDebugMessage(-1,
                                                              15.0f,
                                                              FColor::Red,
-                                                             FString::Printf(TEXT("Part |%s|"), *parts[0]->AsObject()->GetStringField("text")));
+                                                             FString::Printf(TEXT("Part |%s|"), *parts[0]->AsObject()->GetStringField(TEXT("text"))));
                         }
                     }
                 }
