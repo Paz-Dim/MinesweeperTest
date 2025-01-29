@@ -43,6 +43,9 @@ public class MinesweeperPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "HTTP",
+                "Json",
+                "JsonUtilities"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
