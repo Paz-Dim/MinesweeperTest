@@ -10,19 +10,17 @@ class FMenuBuilder;
 class FMinesweeperPluginModule : public IModuleInterface
 {
 public:
-
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-	
-	/** This function will be bound to Command. */
-	void PluginButtonClicked();
-	
-private:
-
-	void RegisterMenus();
-
+    // Methods
+    /** IModuleInterface implementation */
+    virtual void StartupModule() override;
+    virtual void ShutdownModule() override;
+    /** This function will be bound to Command. */
+    void PluginButtonClicked();
 
 private:
-	TSharedPtr<class FUICommandList> PluginCommands;
+    // Fields
+    TSharedPtr<class FUICommandList> PluginCommands;
+
+    // Methods
+    void RegisterMenus();
 };

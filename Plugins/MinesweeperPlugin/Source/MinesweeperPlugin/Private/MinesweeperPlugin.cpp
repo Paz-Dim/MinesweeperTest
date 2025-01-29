@@ -6,82 +6,79 @@
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
 
+#include "SMainWindow.h"
+
 static const FName MinesweeperPluginTabName("MinesweeperPlugin");
 
 #define LOCTEXT_NAMESPACE "FMinesweeperPluginModule"
 
 void FMinesweeperPluginModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
-	FMinesweeperPluginStyle::Initialize();
-	FMinesweeperPluginStyle::ReloadTextures();
+    // This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 
-	FMinesweeperPluginCommands::Register();
-	
-	PluginCommands = MakeShareable(new FUICommandList);
+    FMinesweeperPluginStyle::Initialize();
+    FMinesweeperPluginStyle::ReloadTextures();
 
-	PluginCommands->MapAction(
-		FMinesweeperPluginCommands::Get().PluginAction,
-		FExecuteAction::CreateRaw(this, &FMinesweeperPluginModule::PluginButtonClicked),
-		FCanExecuteAction());
+    FMinesweeperPluginCommands::Register();
 
-	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FMinesweeperPluginModule::RegisterMenus));
+    PluginCommands = MakeShareable(new FUICommandList);
+
+    PluginCommands->MapAction(
+        FMinesweeperPluginCommands::Get().PluginAction,
+        FExecuteAction::CreateRaw(this, &FMinesweeperPluginModule::PluginButtonClicked),
+        FCanExecuteAction());
+
+    UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FMinesweeperPluginModule::RegisterMenus));
 }
 
 void FMinesweeperPluginModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
+    // This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+    // we call this function before unloading the module.
 
-	UToolMenus::UnRegisterStartupCallback(this);
+    UToolMenus::UnRegisterStartupCallback(this);
 
-	UToolMenus::UnregisterOwner(this);
+    UToolMenus::UnregisterOwner(this);
 
-	FMinesweeperPluginStyle::Shutdown();
+    FMinesweeperPluginStyle::Shutdown();
 
-	FMinesweeperPluginCommands::Unregister();
+    FMinesweeperPluginCommands::Unregister();
 }
 
 void FMinesweeperPluginModule::PluginButtonClicked()
 {
-    GEngine->AddOnScreenDebugMessage(-1,
-                                     15.0f,
-                                     FColor::Red,
-                                     FString::Printf(TEXT("PluginButtonClicked")));
-	/*FText DialogText = FText::Format(
-							LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
-							FText::FromString(TEXT("FMinesweeperPluginModule::PluginButtonClicked()")),
-							FText::FromString(TEXT("MinesweeperPlugin.cpp"))
-					   );
-	FMessageDialog::Open(EAppMsgType::Ok, DialogText);*/
+    auto MyWindow = SNew(SWindow).ClientSize({600.0f, 400.0f})
+        [
+            SNew(SMainWindow)
+        ];
+    FSlateApplication::Get().AddWindow(MyWindow, true);
 }
 
 void FMinesweeperPluginModule::RegisterMenus()
 {
-	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
-	FToolMenuOwnerScoped OwnerScoped(this);
+    // Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
+    FToolMenuOwnerScoped OwnerScoped(this);
 
-	{
-		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
-		{
-			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
-			Section.AddMenuEntryWithCommandList(FMinesweeperPluginCommands::Get().PluginAction, PluginCommands);
-		}
-	}
+    {
+        UToolMenu *Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+        {
+            FToolMenuSection &Section = Menu->FindOrAddSection("WindowLayout");
+            Section.AddMenuEntryWithCommandList(FMinesweeperPluginCommands::Get().PluginAction, PluginCommands);
+        }
+    }
 
-	{
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
-		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FMinesweeperPluginCommands::Get().PluginAction));
-				Entry.SetCommandList(PluginCommands);
-			}
-		}
-	}
+    {
+        UToolMenu *ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
+        {
+            FToolMenuSection &Section = ToolbarMenu->FindOrAddSection("PluginTools");
+            {
+                FToolMenuEntry &Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FMinesweeperPluginCommands::Get().PluginAction));
+                Entry.SetCommandList(PluginCommands);
+            }
+        }
+    }
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FMinesweeperPluginModule, MinesweeperPlugin)
