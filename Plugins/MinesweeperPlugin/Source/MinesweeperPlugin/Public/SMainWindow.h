@@ -18,4 +18,13 @@ public:
     // Methods
     /** Constructs this widget with InArgs */
     void Construct(const FArguments &InArgs);
+
+protected:
+    // Fields
+    // Request input field
+    TSharedPtr<SEditableTextBox> m_requestInput {nullptr};
+
+    // Methods
+    // Request button clicked
+    FReply onRequestButtonClick();
 };
