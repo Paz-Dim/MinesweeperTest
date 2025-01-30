@@ -46,8 +46,16 @@ protected:
     TSharedPtr<SMainWindow> m_uiComponent;
     // Game field matrix
     FMatrixArray<EGameCell> m_gameGrid;
+    // Game over flag
+    bool m_gameOver {false};
 
     // Methods
     // Split received HTTP message into strings and validate it. Return array of lines, empty if message was incorrect.
     TArray<FString> getLinesFromMessage(const FString &message);
+    // Count mines around cell
+    int32 getNeighborMinesNumber(int32 x, int32 y);
+    // Check cell for recursive processing. Return true if it is HIDDEN.
+    bool checkCell(int32 x, int32 y);
+    // Recursive empty cell process
+    void processCell(int32 x, int32 y);
 };
