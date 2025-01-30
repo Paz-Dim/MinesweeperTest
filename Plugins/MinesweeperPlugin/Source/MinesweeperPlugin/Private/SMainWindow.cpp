@@ -1,11 +1,14 @@
 #include "SMainWindow.h"
 #include "SlateOptMacros.h"
 
+const FSlateColor SMainWindow::SGridElement::HIDDEN_COLOR {FSlateColor(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f))};
+
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SMainWindow::Construct(const FArguments &InArgs)
 {
     ChildSlot
         .Padding(20.0f)
+        .HAlign(EHorizontalAlignment::HAlign_Fill)
         [
             SNew(SVerticalBox)
                 // Header
@@ -14,16 +17,34 @@ void SMainWindow::Construct(const FArguments &InArgs)
                 .HAlign(EHorizontalAlignment::HAlign_Center)
                 .VAlign(EVerticalAlignment::VAlign_Center)
                 [
-                    SNew(STextBlock).Text(FText::FromString("Minesweeper"))
+                    SNew(STextBlock)
+                        .Text(FText::FromString("Minesweeper"))
                         .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 20))
                 ]
-                // Game grid
+                // Game part
                 + SVerticalBox::Slot()
-                .HAlign(EHorizontalAlignment::HAlign_Center)
+                .HAlign(EHorizontalAlignment::HAlign_Fill)
                 .VAlign(EVerticalAlignment::VAlign_Fill)
                 [
-                    SAssignNew(m_requestResult, STextBlock).Text(FText::FromString("TODO"))
-                        .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 20))
+                    SNew(SHorizontalBox)
+                        // Game grid
+                        + SHorizontalBox::Slot()
+                        .AutoWidth()
+                        .HAlign(EHorizontalAlignment::HAlign_Center)
+                        .VAlign(EVerticalAlignment::VAlign_Center)
+                        [
+                            SAssignNew(m_gameGrid, SUniformGridPanel)
+                        ]
+                        // Request result
+                        + SHorizontalBox::Slot()
+                        .AutoWidth()
+                        .HAlign(EHorizontalAlignment::HAlign_Center)
+                        .VAlign(EVerticalAlignment::VAlign_Center)
+                        [
+                            SAssignNew(m_requestResult, STextBlock)
+                                .Text(FText::FromString(""))
+                                .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 16))
+                        ]
                 ]
                 // Request block
                 + SVerticalBox::Slot()
@@ -67,10 +88,59 @@ void SMainWindow::httpResult(bool result, const FString &message)
 }
 
 
+void SMainWindow::resetField(int32 width, int32 height)
+{
+    // Remove old grid
+    m_gameGrid->ClearChildren();
+    for (int32 iX = 0; iX < width; iX++)
+        for (int32 iY = 0; iY < height; iY++)
+        {
+            m_gameGrid->AddSlot(iX, iY)
+                [
+                    SNew(SGridElement)
+                ];
+        }
+}
+
+
 FReply SMainWindow::onRequestButtonClick()
 {
     m_onSubmitRequest.Broadcast(m_requestInput->GetText().ToString());
 
+    return FReply::Handled();
+}
+
+
+void SMainWindow::SGridElement::Construct(const FArguments &InArgs)
+{
+    ChildSlot
+        .Padding(5.0f)
+        [
+            // Button to process clicks
+            SAssignNew(m_button, SButton)
+                .HAlign(EHorizontalAlignment::HAlign_Fill)
+                .VAlign(EVerticalAlignment::VAlign_Fill)
+                .ButtonColorAndOpacity(HIDDEN_COLOR)
+                .OnClicked(this, &SGridElement::clicked)
+                [
+                    // Label to show mines number
+                    SNew(STextBlock)
+                        .Text(FText::FromString("#"))
+                        .Margin(20.0f)
+                        .ColorAndOpacity(FColor::Black)
+                        .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 12))
+                ]
+        ];
+}
+
+
+FReply SMainWindow::SGridElement::clicked()
+{
+    GEngine->AddOnScreenDebugMessage(-1,
+                                     15.0f,
+                                     FColor::Red,
+                                     FString::Printf(TEXT("clicked") ));
+    m_button->SetEnabled(false);
     return FReply::Handled();
 }
 

@@ -53,7 +53,8 @@ void FMinesweeperPluginModule::ShutdownModule()
 
 void FMinesweeperPluginModule::PluginButtonClicked()
 {
-    auto MyWindow = SNew(SWindow).ClientSize({600.0f, 400.0f})
+    auto myWindow = SNew(SWindow)
+        .ClientSize({600.0f, 400.0f})
         [
             SAssignNew(m_mainWindow, SMainWindow)
         ];
@@ -61,8 +62,9 @@ void FMinesweeperPluginModule::PluginButtonClicked()
     // Connect created window to other components
     m_mainWindow->m_onSubmitRequest.AddSP(m_aiConnector.ToSharedRef(), &FAIConnector::performRequest);
     m_aiConnector->m_onRequestResult.AddSP(m_mainWindow.ToSharedRef(), &SMainWindow::httpResult);
+    m_gameController->setUIComponent(m_mainWindow);
 
-    FSlateApplication::Get().AddWindow(MyWindow, true);
+    FSlateApplication::Get().AddWindow(myWindow, true);
 }
 
 void FMinesweeperPluginModule::RegisterMenus()
