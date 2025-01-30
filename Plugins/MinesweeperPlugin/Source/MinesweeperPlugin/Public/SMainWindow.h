@@ -1,13 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HttpModule.h"
-#include "Interfaces/IHttpRequest.h"
-#include "Interfaces/IHttpResponse.h"
 
 #include "Widgets/SCompoundWidget.h"
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnSubmitRequest, const FString &/*Request*/);
 
 /**
  *
@@ -19,18 +16,20 @@ public:
         {}
     SLATE_END_ARGS()
 
+    // Fields
+    // Request delegate
+    FOnSubmitRequest m_onSubmitRequest;
+
     // Methods
     /** Constructs this widget with InArgs */
     void Construct(const FArguments &InArgs);
+    // HTTP request result
+    void httpResult(bool result, const FString &message);
 
 protected:
-    // Constants
-    // Google Gemini request format
-    static const FString HTTP_REQUEST_FORMAT;
-    // Google Gemeni API URL
-    static const FString HTTP_REQUEST_URL;
-
     // Fields
+    // Request result field
+    TSharedPtr<STextBlock> m_requestResult {nullptr};
     // Request input field
     TSharedPtr<SEditableTextBox> m_requestInput {nullptr};
 

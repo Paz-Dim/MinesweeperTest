@@ -1,11 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SMainWindow.h"
 #include "SlateOptMacros.h"
-
-const FString SMainWindow::HTTP_REQUEST_FORMAT {"{'contents': [{'parts':[{'text': '{0}. Show only result, use X for empty cells and O for mines. Skip extra lines.'}]}]}"};
-const FString SMainWindow::HTTP_REQUEST_URL {"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyByLZNRcZviFG-nf2E2RjEkzm4W4mxWIK0"};
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SMainWindow::Construct(const FArguments &InArgs)
@@ -28,7 +22,7 @@ void SMainWindow::Construct(const FArguments &InArgs)
                 .HAlign(EHorizontalAlignment::HAlign_Center)
                 .VAlign(EVerticalAlignment::VAlign_Fill)
                 [
-                    SNew(STextBlock).Text(FText::FromString("TODO"))
+                    SAssignNew(m_requestResult, STextBlock).Text(FText::FromString("TODO"))
                         .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 20))
                 ]
                 // Request block
@@ -63,77 +57,19 @@ void SMainWindow::Construct(const FArguments &InArgs)
 }
 
 
+void SMainWindow::httpResult(bool result, const FString &message)
+{
+    if (result)
+        m_requestResult->SetColorAndOpacity(FSlateColor(FColor::Green));
+    else
+        m_requestResult->SetColorAndOpacity(FSlateColor(FColor::Red));
+    m_requestResult->SetText(FText::FromString(message));
+}
+
+
 FReply SMainWindow::onRequestButtonClick()
 {
-    TSharedRef<IHttpRequest> httpRequest = FHttpModule::Get().CreateRequest();
-    httpRequest->SetVerb("POST");
-    httpRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-    httpRequest->SetContentAsString(FString::Format(*HTTP_REQUEST_FORMAT, {m_requestInput->GetText().ToString()}));
-    httpRequest->SetURL(*HTTP_REQUEST_URL);
-    httpRequest->OnProcessRequestComplete().BindLambda([](FHttpRequestPtr httpRequest, FHttpResponsePtr httpResponse, bool bSucceeded)
-    {
-        if (!bSucceeded)
-            GEngine->AddOnScreenDebugMessage(-1,
-                                             15.0f,
-                                             FColor::Red,
-                                             FString::Printf(TEXT("HTTP request failed")));
-        else if (httpResponse->GetResponseCode() != 200)
-            GEngine->AddOnScreenDebugMessage(-1,
-                                             15.0f,
-                                             FColor::Red,
-                                             FString::Printf(TEXT("HTTP request error %d %s"),
-                                             httpResponse->GetResponseCode(),
-                                             *httpResponse->GetContentAsString()));
-        else
-        {
-            TSharedPtr<FJsonObject> jsonObject = MakeShared<FJsonObject>();
-            TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(httpResponse->GetContentAsString());
-            if (FJsonSerializer::Deserialize(jsonReader, jsonObject))
-            {
-                TArray<TSharedPtr<FJsonValue>> candidates = jsonObject->GetArrayField(TEXT("candidates"));
-                if (candidates.IsEmpty())
-                    GEngine->AddOnScreenDebugMessage(-1,
-                                                     15.0f,
-                                                     FColor::Red,
-                                                     FString::Printf(TEXT("Candidates empty")));
-                else
-                {
-                    TSharedPtr<FJsonObject> content = candidates[0]->AsObject()->GetObjectField(TEXT("content"));
-                    if (!content)
-                        GEngine->AddOnScreenDebugMessage(-1,
-                                                         15.0f,
-                                                         FColor::Red,
-                                                         FString::Printf(TEXT("No content")));
-                    else
-                    {
-                        TArray<TSharedPtr<FJsonValue>> parts = content->GetArrayField(TEXT("parts"));
-                        if (parts.IsEmpty())
-                            GEngine->AddOnScreenDebugMessage(-1,
-                                                             15.0f,
-                                                             FColor::Red,
-                                                             FString::Printf(TEXT("Parts empty")));
-                        else
-                        {
-                            GEngine->AddOnScreenDebugMessage(-1,
-                                                             15.0f,
-                                                             FColor::Red,
-                                                             FString::Printf(TEXT("Part %d"), parts.Num()));
-                            GEngine->AddOnScreenDebugMessage(-1,
-                                                             15.0f,
-                                                             FColor::Red,
-                                                             FString::Printf(TEXT("Part |%s|"), *parts[0]->AsObject()->GetStringField(TEXT("text"))));
-                        }
-                    }
-                }
-            }
-            else
-                GEngine->AddOnScreenDebugMessage(-1,
-                                                 15.0f,
-                                                 FColor::Red,
-                                                 FString::Printf(TEXT("Parse error %s"), *httpResponse->GetContentAsString()));
-        }
-    });
-    httpRequest->ProcessRequest();
+    m_onSubmitRequest.Broadcast(m_requestInput->GetText().ToString());
 
     return FReply::Handled();
 }
