@@ -6,6 +6,7 @@ class FToolBarBuilder;
 class FMenuBuilder;
 class SMainWindow;
 class FAIConnector;
+class FGameController;
 
 class FMinesweeperPluginModule : public IModuleInterface
 {
@@ -24,6 +25,8 @@ private:
     TSharedPtr<SMainWindow> m_mainWindow {nullptr};
     // AI connector to perform requests to Gemini
     TSharedPtr<FAIConnector> m_aiConnector {nullptr};
+    // Game controller
+    TSharedPtr<FGameController> m_gameController {nullptr};
 
     // Methods
     void RegisterMenus();

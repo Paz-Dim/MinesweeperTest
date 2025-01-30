@@ -18,7 +18,7 @@ class FAIConnector
 public:
     // Fields
     // Request result delegate
-    FOnRequestResult m_onRequestResultUI;
+    FOnRequestResult m_onRequestResult;
 
     // Methods
     // Perform request

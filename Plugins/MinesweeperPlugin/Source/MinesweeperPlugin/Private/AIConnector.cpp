@@ -19,9 +19,9 @@ void FAIConnector::performRequest(const FString &request)
 void FAIConnector::httpRequestCallback(FHttpRequestPtr httpRequest, FHttpResponsePtr httpResponse, bool bSucceeded)
 {
     if (!bSucceeded)
-        m_onRequestResultUI.Broadcast(false, FString("HTTP request failed"));
+        m_onRequestResult.Broadcast(false, FString("HTTP request failed"));
     else if (httpResponse->GetResponseCode() != 200)
-        m_onRequestResultUI.Broadcast(false, FString::Printf(TEXT("HTTP request error %d %s"),
+        m_onRequestResult.Broadcast(false, FString::Printf(TEXT("HTTP request error %d %s"),
                                            httpResponse->GetResponseCode(),
                                            *httpResponse->GetContentAsString()));
     else
@@ -29,24 +29,24 @@ void FAIConnector::httpRequestCallback(FHttpRequestPtr httpRequest, FHttpRespons
         TSharedPtr<FJsonObject> jsonObject = MakeShared<FJsonObject>();
         TSharedRef<TJsonReader<TCHAR>> jsonReader = TJsonReaderFactory<TCHAR>::Create(httpResponse->GetContentAsString());
         if (!FJsonSerializer::Deserialize(jsonReader, jsonObject))
-            m_onRequestResultUI.Broadcast(false, FString::Printf(TEXT("Parse error %s"), *httpResponse->GetContentAsString()));
+            m_onRequestResult.Broadcast(false, FString::Printf(TEXT("Parse error %s"), *httpResponse->GetContentAsString()));
         else
         {
             TArray<TSharedPtr<FJsonValue>> candidates = jsonObject->GetArrayField(TEXT("candidates"));
             if (candidates.IsEmpty())
-                m_onRequestResultUI.Broadcast(false, FString("Candidates empty"));
+                m_onRequestResult.Broadcast(false, FString("Candidates empty"));
             else
             {
                 TSharedPtr<FJsonObject> content = candidates[0]->AsObject()->GetObjectField(TEXT("content"));
                 if (!content)
-                    m_onRequestResultUI.Broadcast(false, FString("No content"));
+                    m_onRequestResult.Broadcast(false, FString("No content"));
                 else
                 {
                     TArray<TSharedPtr<FJsonValue>> parts = content->GetArrayField(TEXT("parts"));
                     if (parts.IsEmpty())
-                        m_onRequestResultUI.Broadcast(false, FString("Parts empty"));
+                        m_onRequestResult.Broadcast(false, FString("Parts empty"));
                     else
-                        m_onRequestResultUI.Broadcast(true, parts[0]->AsObject()->GetStringField(TEXT("text")));
+                        m_onRequestResult.Broadcast(true, parts[0]->AsObject()->GetStringField(TEXT("text")));
                 }
             }
         }

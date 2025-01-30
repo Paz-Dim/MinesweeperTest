@@ -6,6 +6,7 @@
 
 #include "SMainWindow.h"
 #include "AIConnector.h"
+#include "GameController.h"
 
 static const FName MinesweeperPluginTabName("MinesweeperPlugin");
 
@@ -28,6 +29,8 @@ void FMinesweeperPluginModule::StartupModule()
 
     // Create plugin components
     m_aiConnector = MakeShared<FAIConnector>();
+    m_gameController = MakeShared<FGameController>();
+    m_aiConnector->m_onRequestResult.AddSP(m_gameController.ToSharedRef(), &FGameController::httpResult);
 
     UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FMinesweeperPluginModule::RegisterMenus));
 }
@@ -39,7 +42,7 @@ void FMinesweeperPluginModule::ShutdownModule()
     UToolMenus::UnRegisterStartupCallback(this);
 
     // Clear components connections
-    m_aiConnector->m_onRequestResultUI.Clear();
+    m_aiConnector->m_onRequestResult.Clear();
 
     UToolMenus::UnregisterOwner(this);
 
@@ -57,7 +60,7 @@ void FMinesweeperPluginModule::PluginButtonClicked()
 
     // Connect created window to other components
     m_mainWindow->m_onSubmitRequest.AddSP(m_aiConnector.ToSharedRef(), &FAIConnector::performRequest);
-    m_aiConnector->m_onRequestResultUI.AddSP(m_mainWindow.ToSharedRef(), &SMainWindow::httpResult);
+    m_aiConnector->m_onRequestResult.AddSP(m_mainWindow.ToSharedRef(), &SMainWindow::httpResult);
 
     FSlateApplication::Get().AddWindow(MyWindow, true);
 }
