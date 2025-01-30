@@ -2,6 +2,8 @@
 #include "SlateOptMacros.h"
 
 const FSlateColor SMainWindow::SGridElement::HIDDEN_COLOR {FSlateColor(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f))};
+const FLinearColor SMainWindow::SGridElement::OPEN_COLOR {FLinearColor(0.0f, 1.0f, 0.0f, 1.0f)};
+const FLinearColor SMainWindow::SGridElement::MINE_COLOR {FLinearColor(1.0f, 0.0f, 0.0f, 1.0f)};
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SMainWindow::Construct(const FArguments &InArgs)
@@ -92,14 +94,26 @@ void SMainWindow::resetField(int32 width, int32 height)
 {
     // Remove old grid
     m_gameGrid->ClearChildren();
+    m_elements.setSize(width, height, TSharedPtr<SGridElement>());
+
+    TSharedPtr<SGridElement> newElem;
     for (int32 iX = 0; iX < width; iX++)
         for (int32 iY = 0; iY < height; iY++)
         {
             m_gameGrid->AddSlot(iX, iY)
                 [
-                    SNew(SGridElement)
+                    SAssignNew(newElem, SGridElement)
                 ];
+            newElem->m_pos = TPair<int32, int32>(iX, iY);
+            newElem->m_onClicked.BindSP(this, &SMainWindow::elementClicked);
+            m_elements.setElem(iX, iY, newElem);
         }
+}
+
+
+void SMainWindow::openElement(int32 x, int32 y, const FText &label, bool mine)
+{
+    m_elements.getElem(x, y)->open(x, y, label, mine);
 }
 
 
@@ -108,6 +122,12 @@ FReply SMainWindow::onRequestButtonClick()
     m_onSubmitRequest.Broadcast(m_requestInput->GetText().ToString());
 
     return FReply::Handled();
+}
+
+
+void SMainWindow::elementClicked(int32 x, int32 y)
+{
+    m_onClicked.ExecuteIfBound(x, y);
 }
 
 
@@ -124,8 +144,7 @@ void SMainWindow::SGridElement::Construct(const FArguments &InArgs)
                 .OnClicked(this, &SGridElement::clicked)
                 [
                     // Label to show mines number
-                    SNew(STextBlock)
-                        .Text(FText::FromString("#"))
+                    SAssignNew(m_label, STextBlock)
                         .Margin(20.0f)
                         .ColorAndOpacity(FColor::Black)
                         .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 12))
@@ -134,13 +153,21 @@ void SMainWindow::SGridElement::Construct(const FArguments &InArgs)
 }
 
 
+void SMainWindow::SGridElement::open(int32 x, int32 y, const FText &label, bool mine)
+{
+    m_button->SetEnabled(false);
+    if (mine)
+        m_button->SetBorderBackgroundColor(MINE_COLOR);
+    else
+        m_button->SetBorderBackgroundColor(OPEN_COLOR);
+    m_label->SetText(label);
+}
+
+
 FReply SMainWindow::SGridElement::clicked()
 {
-    GEngine->AddOnScreenDebugMessage(-1,
-                                     15.0f,
-                                     FColor::Red,
-                                     FString::Printf(TEXT("clicked") ));
-    m_button->SetEnabled(false);
+    m_onClicked.ExecuteIfBound(m_pos.Key, m_pos.Value);
+
     return FReply::Handled();
 }
 

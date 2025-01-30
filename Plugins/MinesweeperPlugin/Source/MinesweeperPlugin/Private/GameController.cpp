@@ -28,6 +28,40 @@ void FGameController::httpResult(bool result, const FString &message)
 void FGameController::setUIComponent(TSharedPtr<SMainWindow> uiComponent)
 {
     m_uiComponent = uiComponent;
+    m_uiComponent->m_onClicked.BindRaw(this, &FGameController::uiElementClicked);
+}
+
+
+void FGameController::uiElementClicked(int32 x, int32 y)
+{
+    TPair<int32, int32> gridSize = m_gameGrid.getSize();
+    // Skip out-of-grid and already open elements
+    if ((x >= gridSize.Key) ||
+        (y >= gridSize.Value) ||
+        ((m_gameGrid.getElem(x, y) != HIDDEN) && (m_gameGrid.getElem(x, y) != MINE)))
+        return;
+
+    // Found mine
+    if (m_gameGrid.getElem(x, y) == MINE)
+    {
+        m_uiComponent->openElement(x, y, FText::FromString("#"), true);
+        m_gameGrid.setElem(x, y, MINE_OPEN);
+    }
+    else
+    {
+        // Count mines on neighbor cells
+        int32 minesCounter = 0;
+        for (int32 xCheck = x - 1; xCheck <= x + 1; xCheck++)
+            for (int32 yCheck = y - 1; yCheck <= y + 1; yCheck++)
+            {
+                if ((xCheck >= 0) && (xCheck < gridSize.Key) &&
+                    (yCheck >= 0) && (yCheck < gridSize.Value) &&
+                    (m_gameGrid.getElem(xCheck, yCheck) == MINE))
+                    minesCounter++;
+            }
+        m_uiComponent->openElement(x, y, FText::AsNumber(minesCounter), false);
+        m_gameGrid.setElem(x, y, OPEN);
+    }
 }
 
 

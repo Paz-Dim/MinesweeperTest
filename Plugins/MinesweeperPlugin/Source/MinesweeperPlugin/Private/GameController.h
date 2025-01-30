@@ -17,6 +17,8 @@ public:
     void httpResult(bool result, const FString &message);
     // Set UI component
     void setUIComponent(TSharedPtr<SMainWindow> uiComponent);
+    // UI element clicked
+    void uiElementClicked(int32 x, int32 y);
 
 protected:
     // Types
