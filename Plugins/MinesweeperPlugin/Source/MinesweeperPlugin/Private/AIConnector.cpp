@@ -1,6 +1,6 @@
 #include "AIConnector.h"
 
-const FString FAIConnector::HTTP_REQUEST_FORMAT {"{'contents': [{'parts':[{'text': '{0}. Count rows, cols and mines carefully. Show only result, use X for empty cells and O for mines. Skip extra lines.'}]}]}"};
+const FString FAIConnector::HTTP_REQUEST_FORMAT {"{'contents': [{'parts':[{'text': '{0}. Count rows, cols and mines carefully. Show only result, use X for empty cells and O for mines. Skip extra lines and symbols.'}]}]}"};
 const FString FAIConnector::HTTP_REQUEST_URL {"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyByLZNRcZviFG-nf2E2RjEkzm4W4mxWIK0"};
 
 void FAIConnector::performRequest(const FString &request)

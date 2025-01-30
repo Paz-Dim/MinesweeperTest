@@ -134,7 +134,6 @@ void SMainWindow::elementClicked(int32 x, int32 y)
 void SMainWindow::SGridElement::Construct(const FArguments &InArgs)
 {
     ChildSlot
-        .Padding(5.0f)
         [
             // Button to process clicks
             SAssignNew(m_button, SButton)
@@ -145,7 +144,6 @@ void SMainWindow::SGridElement::Construct(const FArguments &InArgs)
                 [
                     // Label to show mines number
                     SAssignNew(m_label, STextBlock)
-                        .Margin(20.0f)
                         .ColorAndOpacity(FColor::Black)
                         .Font(FSlateFontInfo("Slate/Fonts/Roboto-Bold.ttf", 12))
                 ]
