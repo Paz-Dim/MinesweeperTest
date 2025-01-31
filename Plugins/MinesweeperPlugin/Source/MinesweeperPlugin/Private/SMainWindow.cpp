@@ -37,7 +37,7 @@ void SMainWindow::Construct(const FArguments &InArgs)
                         [
                             SAssignNew(m_gameGrid, SUniformGridPanel)
                         ]
-                        // Request result
+                        // Request result label
                         + SHorizontalBox::Slot()
                         .AutoWidth()
                         .HAlign(EHorizontalAlignment::HAlign_Center)
@@ -55,7 +55,7 @@ void SMainWindow::Construct(const FArguments &InArgs)
                 .VAlign(EVerticalAlignment::VAlign_Center)
                 [
                     SNew(SHorizontalBox)
-                        // Input
+                        // Input field
                         + SHorizontalBox::Slot()
                         .HAlign(EHorizontalAlignment::HAlign_Fill)
                         .VAlign(EVerticalAlignment::VAlign_Center)
@@ -96,6 +96,7 @@ void SMainWindow::resetField(int32 width, int32 height)
     m_gameGrid->ClearChildren();
     m_elements.setSize(width, height, TSharedPtr<SGridElement>());
 
+    // Create new elements
     TSharedPtr<SGridElement> newElem;
     for (int32 iX = 0; iX < width; iX++)
         for (int32 iY = 0; iY < height; iY++)

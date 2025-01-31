@@ -10,7 +10,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnSubmitRequest, const FString &/*Request*/
 DECLARE_DELEGATE_TwoParams(FOnGridClick, int32 /*X*/, int32 /*Y*/);
 
 /**
- *
+ * Main plugin widget
  */
 class MINESWEEPERPLUGIN_API SMainWindow : public SCompoundWidget
 {
@@ -78,7 +78,7 @@ protected:
     };
 
     // Fields
-    // Request result field
+    // Request result label
     TSharedPtr<STextBlock> m_requestResult {nullptr};
     // Request input field
     TSharedPtr<SEditableTextBox> m_requestInput {nullptr};

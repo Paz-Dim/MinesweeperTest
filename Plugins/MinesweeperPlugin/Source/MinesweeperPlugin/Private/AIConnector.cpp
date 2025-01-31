@@ -20,7 +20,7 @@ void FAIConnector::httpRequestCallback(FHttpRequestPtr httpRequest, FHttpRespons
 {
     if (!bSucceeded)
         m_onRequestResult.Broadcast(false, FString("HTTP request failed"));
-    else if (httpResponse->GetResponseCode() != 200)
+    else if (httpResponse->GetResponseCode() != EHttpResponseCodes::Ok)
         m_onRequestResult.Broadcast(false, FString::Printf(TEXT("HTTP request error %d %s"),
                                            httpResponse->GetResponseCode(),
                                            *httpResponse->GetContentAsString()));
